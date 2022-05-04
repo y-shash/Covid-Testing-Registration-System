@@ -125,8 +125,35 @@ def login(request):
             data={
                 'userName': username,
                 'password': password
-                # The password for each of the sample user objects that have been created for you are the same as
-                # their respective usernames.
+                # The password for each of the sample user objects that have been created for you are the same as their respective usernames.
             }
         )
         json_data = response.json()
+
+        if "statusCode" not in json_data.keys():
+
+            response = requests.get(url=system.getUsers(), headers={'Authorization': my_api_key})
+            json_data = response.json()
+
+            # The GET /user endpoint returns a JSON array, so we can loop through the response as we could with a normal array/list.
+
+            for user in json_data:
+                if user["userName"] == username:
+                    global userId
+                    login.setId(user['id'])
+                    userId = user['id']
+                    theUser = user
+
+            if theUser['isReceptionist']:
+                return redirect('/form')
+            else:
+                return redirect('/testsites')
+
+        elif json_data['statusCode'] is 403:
+            print('Credentials are invalid')
+            return redirect('/login')
+
+        return render(request, 'measurements/login.html')
+    else:
+        return render(request, 'measurements/login.html')
+
