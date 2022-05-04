@@ -80,6 +80,7 @@ class PCR(CovidTest, ABC):
     def getTimeTaken(self):
         return self.type + " takes" + " 72 hours"
 
+
 class Login(object):
     def __init__(self, username):
         self.username = username
@@ -104,3 +105,28 @@ class Form(object):
     def getTotalAnswers(self):
         return self.q1 + self.q2 + self.q3 + self.q4 + self.q5 + self.q6
 
+
+# function
+
+userId = ''
+
+
+def login(request):
+    system = System()
+    if request.method == "POST":
+        username = request.POST['username']
+        password = request.POST['password']
+        login = Login(username)
+
+        response = requests.post(
+            url=system.getLogin(),
+            headers={'Authorization': my_api_key},
+            params={'jwt': 'true'},  # Return a JWT so we can use it in Part 5 later.
+            data={
+                'userName': username,
+                'password': password
+                # The password for each of the sample user objects that have been created for you are the same as
+                # their respective usernames.
+            }
+        )
+        json_data = response.json()
