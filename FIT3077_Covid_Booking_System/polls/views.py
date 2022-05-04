@@ -1,9 +1,4 @@
-from django.core.mail.backends import console
-from django.shortcuts import render, get_object_or_404, redirect
-from .models import Measurement, User
-from django.contrib.auth.models import auth
-from .forms import MeasurementModelForm
-from django.http import HttpResponse
+from django.shortcuts import render, redirect
 from django.contrib import messages
 import requests
 from abc import ABC, abstractmethod
@@ -153,9 +148,7 @@ def login(request):
             print('Credentials are invalid')
             return redirect('/login')
 
-        return render(request, 'measurements/login.html')
-    else:
-        return render(request, 'measurements/login.html')
+    return render(request, 'measurements/login.html')
 
 
 def form(request):
