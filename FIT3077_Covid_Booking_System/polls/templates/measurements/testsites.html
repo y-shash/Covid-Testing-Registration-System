@@ -51,7 +51,7 @@
                                                 <td>{{ item.phoneNumber}}</td>
                                                 <td>{{ item.bookingTime}}</td>
                                                 <td>
-                                                   {% for types in item.additionalInfo %}
+                                                   {% for types in item.additionalInfo.type %}
                                                        {{ types }}
                                                    {% endfor %}
                                                 </td>

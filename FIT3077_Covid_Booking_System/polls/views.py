@@ -212,6 +212,7 @@ def testSites(request):
     response = requests.get(url=system.getTestingSites(), headers={'Authorization': my_api_key})
     json_data = response.json()
     headers = [["Name", "ID", "Suburb", "Phone Number", "Waiting Time", "Facility Type", "Book Now"]]
+    print(json_data)
     for item in json_data:
         if "bookings" in item:
             item["bookingTime"] = len(item["bookings"]) * 30
@@ -227,9 +228,12 @@ def testSites(request):
         for i in range(len(json_data)):
             if "type" in json_data[i]["additionalInfo"]:
                 type = json_data[i]["additionalInfo"]["type"]
-            if json_data[i]["address"]["suburb"].lower() == search_term.lower() or (
-                    type is not None and json_data[i]["additionalInfo"]["type"].lower() == search_term.lower()):
+            if json_data[i]["address"]["suburb"].lower() == search_term.lower():
                 return_list.append(json_data[i])
+            elif type is not None:
+                for item in type:
+                    if item.lower() == search_term.lower():
+                        return_list.append(json_data[i])
 
     context = {'list': headers,
                'value': return_list}
