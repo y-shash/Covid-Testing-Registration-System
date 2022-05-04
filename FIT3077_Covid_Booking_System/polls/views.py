@@ -76,7 +76,7 @@ class CovidTest:
     def __init__(self, patient, id):
         self.patient = patient
         self.id = id
-        self.administerer = ""
+        self.administrator = ""
 
     @abstractmethod
     def getId(self):
@@ -87,12 +87,12 @@ class CovidTest:
         return self.patient
 
     @abstractmethod
-    def getAdministerer(self):
-        return self.administerer
+    def getAdministrator(self):
+        return self.administrator
 
     @abstractmethod
-    def setAdministerer(self, administerer):
-        self.administerer = administerer
+    def setAdministrator(self, administrator):
+        self.administrator = administrator
 
     @abstractmethod
     def getType(self):
@@ -174,6 +174,21 @@ class Administrator(Customer, ABC):
     pass
 
 
+class CovidTestingSites(object):
+    """
+    class to create the covid testing sites and save the data of the testing site chosen by the user
+    """
+    def __init__(self, id):
+        self.id = id
+        self.administerer = ''
+
+    def getId(self):
+        return self.id
+
+    def setAdministerer(self, administererId):
+        self.administerer = administererId
+
+
 class Form(object):
     """
     class to store all the data regarding the form in the system and the answers that have been given by the user
@@ -195,7 +210,7 @@ class Form(object):
 # function
 
 userId = ''
-administerer = ''
+administrator = ''
 patient = ''
 
 
@@ -246,8 +261,8 @@ def login(request):
             # if they are a receptionist send them to the form page
 
             if theUser['isReceptionist']:
-                global administerer
-                administerer = Administerer(userId, username, "receptionist")
+                global administrator
+                administrator = Administrator(userId, username, "receptionist")
                 return redirect('/form')
             # else if they are a customer send them to the testing sites table page
             else:
@@ -321,15 +336,17 @@ def booking(request):
         home = request.POST.get('home', False)
 
         global patient
-        global administerer
+        global administrator
+
+        testSite = CovidTestingSites(testSite)
 
         # if administerer is logged in she will know your ID
         if patient == '':
             patientId = patientFormId
-            administererId = administerer.getId()
+            administratorId = administrator.getId()
         # if patient is logged in he is at home and administerer is yet unknown
         else:
-            administererId = "9bf9d775-8c70-4b26-ad1c-4120c2abf446"
+            administratorId = "9bf9d775-8c70-4b26-ad1c-4120c2abf446"
             patientId = patient.getId()
 
         if home == 1:
@@ -343,7 +360,7 @@ def booking(request):
             params={'jwt': 'true'},  # Return a JWT so we can use it in Part 5 later.
             data={
                 "customerId": userId,
-                "testingSiteId": testSite,
+                "testingSiteId": testSite.getId(),
                 "startTime": start,
                 "notes": testType.getType(),
                 "additionalInfo": {}
@@ -360,7 +377,7 @@ def booking(request):
             data={
                 "type": testType,
                 "patientId": patientId,
-                "administererId": administererId,
+                "administererId": administratorId,
                 "bookingId": json_data["id"],
                 "result": "PENDING",
                 "status": "CREATED",
@@ -401,11 +418,11 @@ def testSites(request):
     return_list = json_data
     global userId
     global patient
-    global administerer
+    global administrator
 
-    # if administerer is logged in she will know your ID
+    # if administrator is logged in she will know your ID
     if patient == '':
-        userId = administerer.getId()
+        userId = administrator.getId()
     # if patient is logged in he is at home and administerer is yet unknown
     else:
         userId = patient.getId()
