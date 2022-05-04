@@ -178,3 +178,37 @@ def form(request):
         messages.info(request, 'Test To Be Taken is a ' + test + " Test!")
 
     return render(request, 'measurements/form.html')
+
+
+def booking(request):
+    system = System()
+    if request.method == "POST":
+        testSite = request.POST['siteId']
+        start = request.POST['startTime']
+        start = start + ":00.000Z"
+        home = request.POST.get('home', False)
+        if home == 1:
+            testType = "RAT"
+        else:
+            testType = "PCR"
+
+        print(userId)
+
+        response = requests.post(
+            url=system.getBookings(),
+            headers={'Authorization': my_api_key},
+            params={'jwt': 'true'},  # Return a JWT so we can use it in Part 5 later.
+            data={
+                "customerId": userId,
+                "testingSiteId": testSite,
+                "startTime": start,
+                "notes": testType,
+                "additionalInfo": {}
+                # The password for each of the sample user objects that have been created for you are the same as their respective usernames.
+            }
+        )
+        json_data = response.json()
+        print(json_data)
+        return redirect('/testsites')
+
+    return render(request, 'measurements/booking.html')
