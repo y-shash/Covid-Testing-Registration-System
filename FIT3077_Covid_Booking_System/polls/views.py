@@ -157,3 +157,24 @@ def login(request):
     else:
         return render(request, 'measurements/login.html')
 
+
+def form(request):
+    if request.method == "POST":
+        q1 = int(request.POST.get('q1', False))
+        q2 = int(request.POST.get('q2', False))
+        q3 = int(request.POST.get('q3', False))
+        q4 = int(request.POST.get('q4', False))
+        q5 = int(request.POST.get('q5', False))
+        q6 = int(request.POST.get('q6', False))
+
+        form = Form(q1, q2, q3, q4, q5, q6)
+        total = form.getTotalAnswers()
+
+        if total > 3:
+            test = "PCR"
+        else:
+            test = "RAT"
+
+        messages.info(request, 'Test To Be Taken is a ' + test + " Test!")
+
+    return render(request, 'measurements/form.html')
