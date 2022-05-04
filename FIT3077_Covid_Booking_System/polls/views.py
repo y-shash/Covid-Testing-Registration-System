@@ -329,7 +329,7 @@ def booking(request):
             administererId = administerer.getId()
         # if patient is logged in he is at home and administerer is yet unknown
         else:
-            administererId = ""
+            administererId = "9bf9d775-8c70-4b26-ad1c-4120c2abf446"
             patientId = patient.getId()
 
         if home == 1:
