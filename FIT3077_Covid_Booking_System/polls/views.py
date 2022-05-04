@@ -69,3 +69,13 @@ class CovidTest(ABC):
     @abstractmethod
     def getAdministerer(self):
         return self.administerer
+
+
+class RAT(CovidTest, ABC):
+    def getTimeTaken(self):
+        return self.type + " takes" + " 15 mins"
+
+
+class PCR(CovidTest, ABC):
+    def getTimeTaken(self):
+        return self.type + " takes" + " 72 hours"
