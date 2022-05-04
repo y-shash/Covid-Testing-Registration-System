@@ -227,6 +227,17 @@ def testSites(request):
 
     return_list = json_data
 
+    if request.method == "POST":
+        search_term = request.POST.get('search', False)
+        return_list = []
+        type = None
+        for i in range(len(json_data)):
+            if "type" in json_data[i]["additionalInfo"]:
+                type = json_data[i]["additionalInfo"]["type"]
+            if json_data[i]["address"]["suburb"].lower() == search_term.lower() or (
+                    type is not None and json_data[i]["additionalInfo"]["type"].lower() == search_term.lower()):
+                return_list.append(json_data[i])
+
     context = {'list': headers,
                'value': return_list}
 
