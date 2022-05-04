@@ -212,3 +212,22 @@ def booking(request):
         return redirect('/testsites')
 
     return render(request, 'measurements/booking.html')
+
+
+def testSites(request):
+    system = System()
+    response = requests.get(url=system.getTestingSites(), headers={'Authorization': my_api_key})
+    json_data = response.json()
+    headers = [["Name", "ID", "Suburb", "Phone Number", "Waiting Time", "Facility Type", "Book Now"]]
+    for item in json_data:
+        if "bookings" in item:
+            item["bookingTime"] = len(item["bookings"]) * 30
+        else:
+            item["bookingTime"] = 0
+
+    return_list = json_data
+
+    context = {'list': headers,
+               'value': return_list}
+
+    return render(request, 'measurements/testsites.html', context)
