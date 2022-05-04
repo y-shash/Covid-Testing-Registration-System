@@ -59,6 +59,7 @@ class Search(object):
     """
     class to store the word that user has entered as a search word and filter
     """
+
     def __init__(self, search):
         self.search = search
 
@@ -72,11 +73,11 @@ class CovidTest(ABC):
     basic functions for all the different test types
     """
 
-    def __init__(self, type, patient, id, administerer):
+    def __init__(self, type, patient, id):
         self.type = type
         self.patient = patient
         self.id = id
-        self.administerer = administerer
+        self.administerer = ""
 
     @abstractmethod
     def getCovidType(self):
@@ -93,6 +94,10 @@ class CovidTest(ABC):
     @abstractmethod
     def getAdministerer(self):
         return self.administerer
+
+    @abstractmethod
+    def setAdministerer(self, administerer):
+        self.administerer = administerer
 
 
 class RAT(CovidTest, ABC):
@@ -130,11 +135,41 @@ class Login(object):
         return self.username
 
 
+class Customer(ABC):
+    """
+    class to create abstract class for all possible customers that are can be in the system
+    """
+
+    def __init__(self, id, username, role):
+        self.id = id
+        self.username = username
+        self.role = role
+
+    @abstractmethod
+    def getId(self):
+        return self.id
+
+    @abstractmethod
+    def getRole(self):
+        return self.role
+
+
+class Administerer(Customer, ABC):
+    """class for administers"""
+    pass
+
+
+class Administrator(Customer, ABC):
+    """class for administrators"""
+    pass
+
+
 class Form(object):
     """
     class to store all the data regarding the form in the system and the answers that have been given by the user
     to it.
     """
+
     def __init__(self, q1, q2, q3, q4, q5, q6):
         self.q1 = q1
         self.q2 = q2
@@ -199,6 +234,7 @@ def login(request):
 
             # if they are a receptionist send them to the form page
             if theUser['isReceptionist']:
+                administerer = Administerer(userId, username,"receptionist")
                 return redirect('/form')
             # else if they are a customer send them to the testing sites table page
             else:
