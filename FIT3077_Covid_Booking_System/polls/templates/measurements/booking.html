@@ -23,15 +23,18 @@
                         <form id="login-form" class="form" method="POST">
                             {% csrf_token %}
 
-                            <h1 class="text-center text-info">LOGIN</h1>
+                            <h1 class="text-center text-info">BOOKING</h1>
                             <div class="form-group">
-                                <label for="username" class="text-info">Username:</label><br>
-                                <input type="text" name="username" class="form-control">
+                                <label for="siteId" class="text-info">Site ID:</label><br>
+                                <input type="text" name="siteId" class="form-control">
                             </div>
 
-                            <div class="form-group">
-                                <label for="password" class="text-info">Password:</label><br>
-                                <input type="password" name="password" id="password" class="form-control">
+                            <label for="startTime">Start Date and Time:</label>
+                            <input type="datetime-local" id="startTime" name="startTime">
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value=1 id="home" />
+                                <label class="form-check-label" for="home">Home Testing</label>
                             </div>
                             {% for message in messages %}
                             <p>***{{message}}</p>
