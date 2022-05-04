@@ -45,3 +45,27 @@ class System(object):
 
     def getPhoto(self):
         return self.photo_url
+
+
+class CovidTest(ABC):
+    def __init__(self, type, patient, id, administerer):
+        self.type = type
+        self.patient = patient
+        self.id = id
+        self.administerer = administerer
+
+    @abstractmethod
+    def getCovidType(self):
+        return self.type
+
+    @abstractmethod
+    def getId(self):
+        return self.id
+
+    @abstractmethod
+    def getPatient(self):
+        return self.patient
+
+    @abstractmethod
+    def getAdministerer(self):
+        return self.administerer
