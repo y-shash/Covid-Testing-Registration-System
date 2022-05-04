@@ -33,15 +33,20 @@
                                 <label for="password" class="text-info">Password:</label><br>
                                 <input type="password" name="password" id="password" class="form-control">
                             </div>
-                            {% for message in messages %}
-                            <p>***{{message}}</p>
-                            {% endfor %}
+
 
                             <div class="form-group">
                                 <input type="submit" name="submit" class="btn btn-info btn-md" value="Submit">
                                 <a class="btn btn-info btn-md" href="{{request.META.HTTP_REFERER|escape}}">Back</a>
                             </div>
                         </form>
+                        {% if messages %}
+                        <ul class="messages">
+                            {% for message in messages %}
+                            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
                     </div>
                 </div>
             </div>

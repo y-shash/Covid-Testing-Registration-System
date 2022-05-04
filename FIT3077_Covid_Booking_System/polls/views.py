@@ -145,7 +145,11 @@ def login(request):
                 return redirect('/testsites')
 
         elif json_data['statusCode'] is 403:
-            print('Credentials are invalid')
+            messages.info(request, "Credentials are invalid")
+            return redirect('/login')
+
+        elif json_data['statusCode'] is 404:
+            messages.info(request, "Credentials are invalid")
             return redirect('/login')
 
     return render(request, 'measurements/login.html')
