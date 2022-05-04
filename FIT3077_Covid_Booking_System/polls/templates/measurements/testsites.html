@@ -49,7 +49,12 @@
                                                 <td>{{ item.id}}</td>
                                                 <td>{{ item.address.suburb}}</td>
                                                 <td>{{ item.phoneNumber}}</td>
-
+                                                <td>{{ item.bookingTime}}</td>
+                                                <td>
+                                                   {% for types in item.additionalInfo %}
+                                                       {{ types }}
+                                                   {% endfor %}
+                                                </td>
                                             <td><button><a href="/booking">Book Now</a></button></td>
                                         </tr>
                                     {% endfor %}
