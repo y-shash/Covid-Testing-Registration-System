@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 import requests
-from abc import ABC, abstractmethod
+from abc import abstractmethod, ABC
 
 # NOTE: In order to access the web service, you will need to include your API key in the Authorization header of all requests you make.
 # Your personal API key can be obtained here: https://fit3077.com
@@ -67,21 +67,16 @@ class Search(object):
         return self.search
 
 
-class CovidTest(ABC):
+class CovidTest:
     """
     Abstract class to create different all the different types of tests, and to extend the similar
     basic functions for all the different test types
     """
 
-    def __init__(self, type, patient, id):
-        self.type = type
+    def __init__(self, patient, id):
         self.patient = patient
         self.id = id
         self.administerer = ""
-
-    @abstractmethod
-    def getCovidType(self):
-        return self.type
 
     @abstractmethod
     def getId(self):
@@ -99,8 +94,12 @@ class CovidTest(ABC):
     def setAdministerer(self, administerer):
         self.administerer = administerer
 
+    @abstractmethod
+    def getType(self):
+        pass
 
-class RAT(CovidTest, ABC):
+
+class RAT(CovidTest):
     """
     class for created RAT test instances
     """
@@ -108,14 +107,20 @@ class RAT(CovidTest, ABC):
     def getTimeTaken(self):
         return self.type + " takes" + " 15 mins"
 
+    def getType(self):
+        return "RAT"
 
-class PCR(CovidTest, ABC):
+
+class PCR(CovidTest):
     """
         class for created RAT test instances
         """
 
     def getTimeTaken(self):
         return self.type + " takes" + " 72 hours"
+
+    def getType(self):
+        return "PCR"
 
 
 class Login(object):
@@ -135,7 +140,7 @@ class Login(object):
         return self.username
 
 
-class Customer(ABC):
+class Customer:
     """
     class to create abstract class for all possible customers that are can be in the system
     """
@@ -152,6 +157,11 @@ class Customer(ABC):
     @abstractmethod
     def getRole(self):
         return self.role
+
+
+class Patient(Customer, ABC):
+    """class for patients"""
+    pass
 
 
 class Administerer(Customer, ABC):
@@ -185,6 +195,8 @@ class Form(object):
 # function
 
 userId = ''
+administerer = ''
+patient = ''
 
 
 def login(request):
@@ -222,22 +234,25 @@ def login(request):
             json_data = response.json()
 
             # The GET /user endpoint returns a JSON array, so we can loop through the response as we could with a normal array/list.
-
+            global userId
             # if the users' username exists in the list of usernames
             for user in json_data:
                 # save their ID for future booking purposes
                 if user["userName"] == username:
-                    global userId
                     login.setId(user['id'])
                     userId = user['id']
                     theUser = user
 
             # if they are a receptionist send them to the form page
+
             if theUser['isReceptionist']:
-                administerer = Administerer(userId, username,"receptionist")
+                global administerer
+                administerer = Administerer(userId, username, "receptionist")
                 return redirect('/form')
             # else if they are a customer send them to the testing sites table page
             else:
+                global patient
+                patient = Patient(userId, username, "patient")
                 return redirect('/testsites')
 
         # if the status code for the login is an incorrect entry sshow a message stating that the
@@ -299,14 +314,28 @@ def booking(request):
     if request.method == "POST":
         # save the data about the site ID and start time for the booking
         testSite = request.POST['siteId']
+        patientFormId = request.POST['customerId']
         start = request.POST['startTime']
         start = start + ":00.000Z"
         # check if it's an onsite or home test
         home = request.POST.get('home', False)
-        if home == 1:
-            testType = "RAT"
+
+        global patient
+        global administerer
+
+        # if administerer is logged in she will know your ID
+        if patient == '':
+            patientId = patientFormId
+            administererId = administerer.getId()
+        # if patient is logged in he is at home and administerer is yet unknown
         else:
-            testType = "PCR"
+            administererId = ""
+            patientId = patient.getId()
+
+        if home == 1:
+            testType = RAT(patient, patientId)
+        else:
+            testType = PCR(patient, patientId)
 
         response = requests.post(
             url=system.getBookings(),
@@ -316,11 +345,31 @@ def booking(request):
                 "customerId": userId,
                 "testingSiteId": testSite,
                 "startTime": start,
-                "notes": testType,
+                "notes": testType.getType(),
                 "additionalInfo": {}
                 # The password for each of the sample user objects that have been created for you are the same as their respective usernames.
             }
         )
+        json_data = response.json()
+
+        # after a booking is created a Covid test for the booking is also created
+        response = requests.post(
+            url=system.getCovidTests(),
+            headers={'Authorization': my_api_key},
+            params={'jwt': 'true'},  # Return a JWT so we can use it in Part 5 later.
+            data={
+                "type": testType,
+                "patientId": patientId,
+                "administererId": administererId,
+                "bookingId": json_data["id"],
+                "result": "PENDING",
+                "status": "CREATED",
+                "notes": "",
+                "additionalInfo": {}
+                # The password for each of the sample user objects that have been created for you are the same as their respective usernames.
+            }
+        )
+
         json_data = response.json()
 
         return redirect('/testsites')
@@ -350,7 +399,16 @@ def testSites(request):
             item["bookingTime"] = 0
 
     return_list = json_data
+    global userId
+    global patient
+    global administerer
 
+    # if administerer is logged in she will know your ID
+    if patient == '':
+        userId = administerer.getId()
+    # if patient is logged in he is at home and administerer is yet unknown
+    else:
+        userId = patient.getId()
     # if search is clicked
     if request.method == "POST":
         search_term = request.POST.get('search', False)
@@ -371,6 +429,7 @@ def testSites(request):
                         return_list.append(json_data[i])
 
     context = {'list': headers,
-               'value': return_list}
+               'value': return_list,
+               'id': userId}
 
     return render(request, 'measurements/testsites.html', context)
