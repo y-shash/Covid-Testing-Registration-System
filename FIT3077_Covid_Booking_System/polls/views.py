@@ -29,6 +29,7 @@ class System(object):
         self.photo_url = root_url + "/photo"
         self.login = ""
         self.form = ""
+        self.search = ""
 
     def getUsers(self):
         return self.users_url
@@ -53,6 +54,9 @@ class System(object):
 
     def setForm(self, form):
         self.form = form
+
+    def setSearch(self, search):
+        self.search = search
 
 
 class Search(object):
@@ -428,7 +432,8 @@ def testSites(request):
         userId = patient.getId()
     # if search is clicked
     if request.method == "POST":
-        search_term = request.POST.get('search', False)
+        search_term = Search(request.POST.get('search', False))
+        system.setSearch(search_term)
         return_list = []
         type = None
         # check all the sites information
@@ -437,12 +442,12 @@ def testSites(request):
             if "type" in json_data[i]["additionalInfo"]:
                 type = json_data[i]["additionalInfo"]["type"]
             # check if the suburb for the site matches the search word
-            if json_data[i]["address"]["suburb"].lower() == search_term.lower():
+            if json_data[i]["address"]["suburb"].lower() == search_term.getSearch().lower():
                 return_list.append(json_data[i])
             # checkl the types in the facility to check if one matches the search word
             elif type is not None:
                 for item in type:
-                    if item.lower() == search_term.lower():
+                    if item.lower() == search_term.getSearch().lower():
                         return_list.append(json_data[i])
 
     context = {'list': headers,
