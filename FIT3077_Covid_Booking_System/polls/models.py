@@ -1,6 +1,7 @@
 from django.db import models
 
 
+# model for the users with all the data for a user
 class User(models.Model):
     id = models.CharField(max_length=200, primary_key=True)
     givenName = models.CharField(max_length=200)
@@ -14,6 +15,7 @@ class User(models.Model):
     additionalInfo = {}
 
 
+# a model for the booking which will store all the details about a booking
 class Booking(models.Model):
     customerId = models.CharField(max_length=200)
     testingSiteId = models.CharField(max_length=200)

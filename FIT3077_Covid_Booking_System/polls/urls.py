@@ -6,6 +6,7 @@ from . import views
 
 app_name = 'measurements'
 
+# save all the url paths that exist for the system
 urlpatterns = [
     # path('', views.index, name='index'),
     path('', views.login, name='calculate-view'),
