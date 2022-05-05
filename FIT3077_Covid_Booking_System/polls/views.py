@@ -52,11 +52,20 @@ class System(object):
     def setLogin(self, login):
         self.login = login
 
+    def getLogins(self):
+        return self.login
+
     def setForm(self, form):
         self.form = form
 
+    def getForm(self):
+        return self.form
+
     def setSearch(self, search):
         self.search = search
+
+    def getSearch(self):
+        return self.search
 
 
 class Search(object):
@@ -80,7 +89,7 @@ class CovidTest:
     def __init__(self, patient, id):
         self.patient = patient
         self.id = id
-        self.administrator = ""
+        self.administerer = ""
 
     @abstractmethod
     def getId(self):
@@ -91,19 +100,19 @@ class CovidTest:
         return self.patient
 
     @abstractmethod
-    def getAdministrator(self):
+    def getAdministerer(self):
         return self.administrator
 
     @abstractmethod
-    def setAdministrator(self, administrator):
-        self.administrator = administrator
+    def setAdministerer(self, administerer):
+        self.administerer = administerer
 
     @abstractmethod
     def getType(self):
         pass
 
 
-class RAT(CovidTest):
+class RAT(CovidTest, ABC):
     """
     class for created RAT test instances
     """
@@ -115,7 +124,7 @@ class RAT(CovidTest):
         return "RAT"
 
 
-class PCR(CovidTest):
+class PCR(CovidTest, ABC):
     """
         class for created RAT test instances
         """
@@ -143,24 +152,22 @@ class Login(object):
     def getUserName(self):
         return self.username
 
+    def getId(self):
+        return self.id
+
 
 class Customer:
     """
     class to create abstract class for all possible customers that are can be in the system
     """
 
-    def __init__(self, id, username, role):
+    def __init__(self, id, username):
         self.id = id
         self.username = username
-        self.role = role
 
     @abstractmethod
     def getId(self):
         return self.id
-
-    @abstractmethod
-    def getRole(self):
-        return self.role
 
 
 class Patient(Customer, ABC):
@@ -170,27 +177,48 @@ class Patient(Customer, ABC):
 
 class Administerer(Customer, ABC):
     """class for administers"""
-    pass
+
+    def __init__(self):
+        super().__init__()
+        self.test = ''
+
+    def setCovidTest(self, test):
+        self.test = test
+
+    def getCovidTest(self, site):
+        return self.site
 
 
 class Administrator(Customer, ABC):
     """class for administrators"""
-    pass
+    def __init__(self):
+        super().__init__()
+        self.site = ''
+
+    def setCovidTestingSite(self, site):
+        self.site = site
+
+    def getCovidTestingSite(self, site):
+        return self.site
 
 
 class CovidTestingSites(object):
     """
     class to create the covid testing sites and save the data of the testing site chosen by the user
     """
+
     def __init__(self, id):
         self.id = id
-        self.administerer = ''
+        self.administrator = ''
 
     def getId(self):
         return self.id
 
-    def setAdministerer(self, administererId):
-        self.administerer = administererId
+    def setAdministrator(self, administratorId):
+        self.administrator = administratorId
+
+    def getAdministrator(self):
+        return self.administrator
 
 
 class Form(object):
@@ -266,12 +294,12 @@ def login(request):
 
             if theUser['isReceptionist']:
                 global administrator
-                administrator = Administrator(userId, username, "receptionist")
+                administrator = Administrator(userId, username)
                 return redirect('/form')
             # else if they are a customer send them to the testing sites table page
             else:
                 global patient
-                patient = Patient(userId, username, "patient")
+                patient = Patient(userId, username)
                 return redirect('/testsites')
 
         # if the status code for the login is an incorrect entry sshow a message stating that the
@@ -339,8 +367,7 @@ def booking(request):
         # check if it's an onsite or home test
         home = request.POST.get('home', False)
 
-        global patient
-        global administrator
+        global administrator, patient
 
         testSite = CovidTestingSites(testSite)
 
@@ -352,6 +379,9 @@ def booking(request):
         else:
             administratorId = "9bf9d775-8c70-4b26-ad1c-4120c2abf446"
             patientId = patient.getId()
+
+        testSite.setAdministrator(administrator)
+        administrator.setCovidTestingSite(testSite)
 
         if home == 1:
             testType = RAT(patient, patientId)
